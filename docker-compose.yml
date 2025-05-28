@@ -20,6 +20,7 @@ services:
       - ${ARRPATH}Sonarr/config:/config
       - ${ARRPATH}Sonarr/backup:/data/Backup
       - ${ARRPATH}Sonarr/tvshows:/data/tvshows
+      - ${ARRPATH}Sonarr/d_tvshows:/data_drive/tvshows
       - ${ARRPATH}Downloads:/downloads
     ports:
       - 8989:8989
@@ -34,6 +35,7 @@ services:
     volumes:
       - ${ARRPATH}Radarr/config:/config
       - ${ARRPATH}Radarr/movies:/data/movies
+      - ${ARRPATH}Radarr/d_movies:/data_drive/movies
       - ${ARRPATH}Radarr/backup:/data/Backup
       - ${ARRPATH}Downloads:/downloads
     ports:
@@ -49,6 +51,7 @@ services:
     volumes:
       - ${ARRPATH}Lidarr/config:/config
       - ${ARRPATH}Lidarr/music:/data/musicfolder
+      - ${ARRPATH}Radarr/d_music:/data_drive/music
       - ${ARRPATH}Downloads:/downloads
     ports:
       - 8686:8686
@@ -63,6 +66,7 @@ services:
     volumes:
       - ${ARRPATH}Readarr/config:/config
       - ${ARRPATH}Readarr/books:/data/books
+      - ${ARRPATH}Radarr/d_books:/data_drive/books
       - ${ARRPATH}Downloads:/downloads
     ports:
       - 8787:8787
@@ -92,9 +96,13 @@ services:
     volumes:
       - ${ARRPATH}Jellyfin/config:/config
       - ${ARRPATH}Radarr/movies:/data/Movies
+      - ${ARRPATH}Radarr/d_movies:/data_drive/movies
       - ${ARRPATH}Sonarr/tvshows:/data/TVShows
+      - ${ARRPATH}Sonarr/d_tvshows:/data_drive/tvshows
       - ${ARRPATH}Lidarr/music:/data/Music
+      - ${ARRPATH}Radarr/d_music:/data_drive/music
       - ${ARRPATH}Readarr/books:/data/Books
+      - ${ARRPATH}Radarr/d_books:/data_drive/books
     env_file:
       - '.env'
     restart: unless-stopped
@@ -102,9 +110,6 @@ services:
   jellyseerr:
     image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
-    environment:
-      - LOG_LEVEL=debug
-      - TZ=Asia/Tashkent
     ports:
       - 5055:5055
     volumes:
