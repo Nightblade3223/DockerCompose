@@ -99,6 +99,20 @@ services:
       - '.env'
     restart: unless-stopped
     
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Asia/Tashkent
+    ports:
+      - 5055:5055
+    volumes:
+      - ${ARRPATH}Jellyseerr/config:/app/config
+    env_file:
+      - '.env'
+    restart: unless-stopped
+    
   qbittorrent:
     image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
