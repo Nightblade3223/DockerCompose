@@ -20,7 +20,7 @@ services:
       - ${ARRPATH}Sonarr/config:/config
       - ${ARRPATH}Sonarr/backup:/data/Backup
       - ${ARRPATH}Sonarr/tvshows:/data/tvshows
-      - ${ARRPATH}Sonarr/d_tvshows:/data_drive/tvshows
+      - data_drive/Sonarr/tvshows:/data/d_Tvshows
       - ${ARRPATH}Downloads:/downloads
     ports:
       - 8989:8989
@@ -35,7 +35,7 @@ services:
     volumes:
       - ${ARRPATH}Radarr/config:/config
       - ${ARRPATH}Radarr/movies:/data/movies
-      - ${ARRPATH}Radarr/d_movies:/data_drive/movies
+      - data_drive/Radarr/movies:/data/d_Movies
       - ${ARRPATH}Radarr/backup:/data/Backup
       - ${ARRPATH}Downloads:/downloads
     ports:
@@ -51,7 +51,7 @@ services:
     volumes:
       - ${ARRPATH}Lidarr/config:/config
       - ${ARRPATH}Lidarr/music:/data/musicfolder
-      - ${ARRPATH}Radarr/d_music:/data_drive/music
+      - data_drive/Lidarr/music:/data/d_Music
       - ${ARRPATH}Downloads:/downloads
     ports:
       - 8686:8686
@@ -66,7 +66,7 @@ services:
     volumes:
       - ${ARRPATH}Readarr/config:/config
       - ${ARRPATH}Readarr/books:/data/books
-      - ${ARRPATH}Radarr/d_books:/data_drive/books
+      - data_drive/Readarr/books:/data/d_Books
       - ${ARRPATH}Downloads:/downloads
     ports:
       - 8787:8787
@@ -96,13 +96,13 @@ services:
     volumes:
       - ${ARRPATH}Jellyfin/config:/config
       - ${ARRPATH}Radarr/movies:/data/Movies
-      - ${ARRPATH}Radarr/d_movies:/data_drive/movies
+      - data_drive/Radarr/movies:/data/d_Movies
       - ${ARRPATH}Sonarr/tvshows:/data/TVShows
-      - ${ARRPATH}Sonarr/d_tvshows:/data_drive/tvshows
+      - data_drive/Sonarr/tvshows:/data/d_Tvshows
       - ${ARRPATH}Lidarr/music:/data/Music
-      - ${ARRPATH}Radarr/d_music:/data_drive/music
+      - data_drive/Lidarr/music:/data/d_Music
       - ${ARRPATH}Readarr/books:/data/Books
-      - ${ARRPATH}Radarr/d_books:/data_drive/books
+      - data_drive/Readarr/books:/data/d_Books
     env_file:
       - '.env'
     restart: unless-stopped
