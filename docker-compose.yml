@@ -1,7 +1,7 @@
 version: "3.9"
 
 ###############################################################################
-# Media-stack docker-compose
+# Media‑stack docker‑compose
 #
 # All host paths are defined through environment variables in an accompanying
 # .env file so you can relocate libraries or change UID/GID without editing
@@ -167,10 +167,10 @@ services:
       - ".env"
 
   ###########################################################################
-  # ───────────── TRANSCODE OPTIMISER ─────────────
+  # ───────────── TRANSCODE SERVER ─────────────
   ###########################################################################
   tdarr:
-    image: ghcr.io/haveagitgat/tdarr:latest   # v2 image
+    image: ghcr.io/haveagitgat/tdarr:latest   # v2 server image
     container_name: tdarr
     hostname: tdarr
     ports:
@@ -186,6 +186,33 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+
+  ###########################################################################
+  # ───────────── TRANSCODE WORKER NODE ─────────────
+  ###########################################################################
+  tdarr-node:
+    image: ghcr.io/haveagitgat/tdarr_node:latest   # v2 node image
+    container_name: tdarr-node
+    hostname: tdarr-node
+    depends_on:
+      - tdarr
+    ports:
+      - "8267:8267"   # Optional node UI/debug port
+    volumes:
+      - ${ARRPATH}Tdarr/config:/app/config
+      - ${ARRPATH}Tdarr/cache:/temp                       # Shared cache with server
+      - ${ARRPATH}Radarr/movies:/data/movies
+      - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
+      - ${ARRPATH}Sonarr/tvshows:/data/tvshows
+      - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
+    restart: unless-stopped
+    env_file:
+      - ".env"
+    environment:
+      - nodeID=tdarr-node
+      - serverIP=tdarr
+      - serverPort=8266
+      - UMASK_SET=002
 
 ###############################################################################
 # OPTIONAL: Custom network / named volumes
