@@ -178,7 +178,7 @@ services:
       - "8266:8266"   # Server <-> Node comms
     volumes:
       - ${ARRPATH}Tdarr/config:/app/config                   # Settings & logs
-      - ${ARRPATH}Tdarr/cache:/app/server/transcode_cache    # Temp cache
+      - ${ARRPATH}Tdarr/cache:/temp    # Temp cache
       - ${ARRPATH}Radarr/movies:/data/movies
       - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
       - ${ARRPATH}Sonarr/tvshows:/data/tvshows
