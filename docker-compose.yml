@@ -166,7 +166,7 @@ services:
   ###########################################################################
   # ───────────── TRANSCODE WORKER NODE ─────────────
   ###########################################################################
-    tdarr-node:
+  tdarr-node:
     image: ghcr.io/haveagitgat/tdarr_node:latest
     container_name: tdarr-node
     hostname: tdarr-node
