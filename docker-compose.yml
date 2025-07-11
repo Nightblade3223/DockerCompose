@@ -189,7 +189,3 @@ services:
       - serverIP=tdarr
       - serverPort=8266
       - UMASK_SET=002
-    command: >
-      bash -c "set -e;
-      ffmpeg -hwaccel qsv -f lavfi -i color=c=black:s=256x256:d=1:r=30
-      -c:v:0 hevc_qsv -f null /dev/null"
