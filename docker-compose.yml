@@ -1,21 +1,5 @@
 version: "3.9"
 
-###############################################################################
-# Media‑stack docker‑compose
-#
-# All host paths are defined through environment variables in an accompanying
-# .env file so you can relocate libraries or change UID/GID without editing
-# this file.  Example .env keys:
-#   TZ=Australia/Brisbane
-#   PUID=1000        # Host user id that owns the files
-#   PGID=1000        # Host group id
-#   ARPATH=/srv/docker/media/
-#   NASDRIVE_1=/mnt/nas1/
-#
-# Each service block below is heavily commented.  Remove comments once you’re
-# familiar with the layout to keep the file tidy.
-###############################################################################
-
 services:
   ###########################################################################
   # ───────────── INDEXERS ─────────────
@@ -25,11 +9,11 @@ services:
     container_name: prowlarr
     hostname: prowlarr
     volumes:
-      - ${ARRPATH}Prowlarr/config:/config         # App config & DB
-      - ${ARRPATH}Prowlarr/backup:/data/Backup    # Scheduled backups
-      - ${ARRPATH}Downloads:/downloads            # Reference to downloads
+      - ${ARRPATH}Prowlarr/config:/config
+      - ${ARRPATH}Prowlarr/backup:/data/Backup
+      - ${CACHE}Downloads:/downloads
     ports:
-      - "9696:9696"                               # Web UI
+      - "9696:9696"
     restart: unless-stopped
     env_file:
       - ".env"
@@ -44,9 +28,8 @@ services:
     volumes:
       - ${ARRPATH}Sonarr/config:/config
       - ${ARRPATH}Sonarr/backup:/data/Backup
-      - ${ARRPATH}Sonarr/tvshows:/data/tvshows            # Local library
-      - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows     # NAS library
-      - ${ARRPATH}Downloads:/downloads                    # Completed/Unsorted
+      - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
+      - ${CACHE}Downloads:/downloads
     ports:
       - "8989:8989"
     restart: unless-stopped
@@ -63,9 +46,8 @@ services:
     volumes:
       - ${ARRPATH}Radarr/config:/config
       - ${ARRPATH}Radarr/backup:/data/Backup
-      - ${ARRPATH}Radarr/movies:/data/movies               # Local
-      - ${NASDRIVE_1}Radarr/movies:/data/nas_movies        # NAS
-      - ${ARRPATH}Downloads:/downloads
+      - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
+      - ${CACHE}Downloads:/downloads
     ports:
       - "7878:7878"
     restart: unless-stopped
@@ -81,9 +63,8 @@ services:
     hostname: lidarr
     volumes:
       - ${ARRPATH}Lidarr/config:/config
-      - ${ARRPATH}Lidarr/music:/data/musicfolder
       - ${NASDRIVE_1}Lidarr/music:/data/nas_music
-      - ${ARRPATH}Downloads:/downloads
+      - ${CACHE}Downloads:/downloads
     ports:
       - "8686:8686"
     restart: unless-stopped
@@ -114,16 +95,13 @@ services:
     container_name: jellyfin
     hostname: jellyfin
     ports:
-      - "8096:8096/tcp"     # Web interface
-      - "7359:7359/udp"     # Network discovery
-      - "1900:1900/udp"     # DLNA
+      - "8096:8096/tcp"
+      - "7359:7359/udp"
+      - "1900:1900/udp"
     volumes:
       - ${ARRPATH}Jellyfin/config:/config
-      - ${ARRPATH}Radarr/movies:/data/Movies
       - ${NASDRIVE_1}Radarr/movies:/data/nas_Movies
-      - ${ARRPATH}Sonarr/tvshows:/data/TVShows
       - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_TVShows
-      - ${ARRPATH}Lidarr/music:/data/Music
       - ${NASDRIVE_1}Lidarr/music:/data/nas_Music
     restart: unless-stopped
     env_file:
@@ -152,16 +130,16 @@ services:
     hostname: qbittorrent
     volumes:
       - ${ARRPATH}qbittorrent/config:/config
-      - ${ARRPATH}Downloads:/downloads
+      - ${CACHE}Downloads:/downloads
     ports:
-      - "8080:8080"   # Web UI
-      - "6881:6881"   # BitTorrent TCP
+      - "8080:8080"
+      - "6881:6881"
       - "6881:6881/udp"
     environment:
       - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
     labels:
-      - "com.centurylinklabs.watchtower.enable=false"   # Skip watchtower auto-updates
+      - "com.centurylinklabs.watchtower.enable=false"
     restart: unless-stopped
     env_file:
       - ".env"
@@ -170,18 +148,16 @@ services:
   # ───────────── TRANSCODE SERVER ─────────────
   ###########################################################################
   tdarr:
-    image: ghcr.io/haveagitgat/tdarr:latest   # v2 server image
+    image: ghcr.io/haveagitgat/tdarr:latest
     container_name: tdarr
     hostname: tdarr
     ports:
-      - "8265:8265"   # Web UI
-      - "8266:8266"   # Server <-> Node comms
+      - "8265:8265"
+      - "8266:8266"
     volumes:
-      - ${ARRPATH}Tdarr/config:/app/config                   # Settings & logs
-      - ${ARRPATH}Tdarr/cache:/temp    # Temp cache
-      - ${ARRPATH}Radarr/movies:/data/movies
+      - ${ARRPATH}Tdarr/config:/app/config
+      - ${CACHE}Tdarr/cache:/temp
       - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
-      - ${ARRPATH}Sonarr/tvshows:/data/tvshows
       - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
     restart: unless-stopped
     env_file:
@@ -191,19 +167,17 @@ services:
   # ───────────── TRANSCODE WORKER NODE ─────────────
   ###########################################################################
   tdarr-node:
-    image: ghcr.io/haveagitgat/tdarr_node:latest   # v2 node image
+    image: ghcr.io/haveagitgat/tdarr_node:latest
     container_name: tdarr-node
     hostname: tdarr-node
     depends_on:
       - tdarr
     ports:
-      - "8267:8267"   # Optional node UI/debug port
+      - "8267:8267"
     volumes:
       - ${ARRPATH}Tdarr/config:/app/config
-      - ${ARRPATH}Tdarr/cache:/temp                       # Shared cache with server
-      - ${ARRPATH}Radarr/movies:/data/movies
+      - ${CACHE}Tdarr/cache:/temp
       - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
-      - ${ARRPATH}Sonarr/tvshows:/data/tvshows
       - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
     restart: unless-stopped
     env_file:
@@ -213,20 +187,3 @@ services:
       - serverIP=tdarr
       - serverPort=8266
       - UMASK_SET=002
-
-###############################################################################
-# OPTIONAL: Custom network / named volumes
-#
-# networks:
-#   media:
-#     driver: bridge
-#
-# volumes:
-#   downloads:
-#   config:
-#
-# To attach all services to the custom network, add the following under each
-# service:
-#   networks:
-#     - media
-###############################################################################
