@@ -166,7 +166,7 @@ services:
   ###########################################################################
   # ───────────── TRANSCODE WORKER NODE ─────────────
   ###########################################################################
-  tdarr-node:
+    tdarr-node:
     image: ghcr.io/haveagitgat/tdarr_node:latest
     container_name: tdarr-node
     hostname: tdarr-node
@@ -174,6 +174,8 @@ services:
       - tdarr
     ports:
       - "8267:8267"
+    devices:
+      - /dev/dri:/dev/dri
     volumes:
       - ${ARRPATH}Tdarr/config:/app/config
       - ${CACHE}Tdarr/cache:/temp
@@ -187,3 +189,7 @@ services:
       - serverIP=tdarr
       - serverPort=8266
       - UMASK_SET=002
+    command: >
+      bash -c "set -e;
+      ffmpeg -hwaccel qsv -f lavfi -i color=c=black:s=256x256:d=1:r=30
+      -c:v:0 hevc_qsv -f null /dev/null"
