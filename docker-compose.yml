@@ -29,6 +29,7 @@ services:
       - ${ARRPATH}Sonarr/config:/config
       - ${ARRPATH}Sonarr/backup:/data/Backup
       - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
+      - ${NASDRIVE_1}Anime:/data/nas_anime
       - ${CACHE}Downloads:/downloads
     ports:
       - "8989:8989"
@@ -105,6 +106,7 @@ services:
       - ${NASDRIVE_1}Radarr/movies:/data/nas_Movies
       - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_TVShows
       - ${NASDRIVE_1}Lidarr/music:/data/nas_Music
+      - ${NASDRIVE_1}Anime:/data/nas_Anime
     restart: unless-stopped
     env_file:
       - ".env"
@@ -161,6 +163,7 @@ services:
       - ${CACHE}Tdarr/cache:/temp
       - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
       - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
+      - ${NASDRIVE_1}Anime:/data/nas_anime
     restart: unless-stopped
     env_file:
       - ".env"
@@ -183,6 +186,7 @@ services:
       - ${CACHE}Tdarr/cache:/temp
       - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
       - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
+      - ${NASDRIVE_1}Anime:/data/nas_anime
     restart: unless-stopped
     env_file:
       - ".env"
