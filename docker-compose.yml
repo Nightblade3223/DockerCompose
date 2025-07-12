@@ -17,6 +17,10 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── TV AUTOMATION ─────────────
@@ -36,6 +40,10 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── MOVIE AUTOMATION ─────────────
@@ -54,6 +62,10 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── MUSIC AUTOMATION ─────────────
@@ -71,6 +83,10 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── HOMEPAGE / DASHBOARD ─────────────
@@ -87,6 +103,10 @@ services:
       - "7575:7575"
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── MEDIA SERVER ─────────────
@@ -110,6 +130,10 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── REQUEST MANAGEMENT ─────────────
@@ -124,6 +148,10 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── TORRENT CLIENT ─────────────
@@ -142,6 +170,9 @@ services:
     environment:
       - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
     restart: unless-stopped
@@ -167,6 +198,10 @@ services:
     restart: unless-stopped
     env_file:
       - ".env"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
 
   ###########################################################################
   # ───────────── TRANSCODE WORKER NODE ─────────────
@@ -191,18 +226,17 @@ services:
     env_file:
       - ".env"
     environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
       - nodeID=tdarr-node
       - serverIP=tdarr
       - serverPort=8266
-      - UMASK_SET=002
 
-      version: "2.1"
-      
-   ###########################################################################
+  ###########################################################################
   # ───────────── Proxy Through CloudFlare ─────────────
   ###########################################################################   
   flaresolverr:
-    # DockerHub mirror flaresolverr/flaresolverr:latest
     image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: flaresolverr
     environment:
@@ -210,6 +244,9 @@ services:
       - LOG_HTML=${LOG_HTML:-false}
       - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
       - TZ=Europe/London
+      - PUID=1000
+      - PGID=1000
+      - UMASK_SET=002
     ports:
       - "${PORT:-8191}:8191"
     restart: unless-stopped
