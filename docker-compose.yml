@@ -98,6 +98,8 @@ services:
       - "8096:8096/tcp"
       - "7359:7359/udp"
       - "1900:1900/udp"
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
     volumes:
       - ${ARRPATH}Jellyfin/config:/config
       - ${NASDRIVE_1}Radarr/movies:/data/nas_Movies
