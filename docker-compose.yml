@@ -142,6 +142,24 @@ services:
       - TZ=${TZ}
 
   ###########################################################################
+  # ───────────── Media Hunter ─────────────
+  ###########################################################################
+  huntarr:
+    image: ghcr.io/plexguide/huntarr:latest
+    container_name: huntarr
+    restart: always
+    ports:
+      - "9705:9705"
+    volumes:
+      - ${ARRPATH}Huntarr/config:/config
+    env_file:
+      - ".env"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+
+  ###########################################################################
   # ───────────── REQUEST MANAGEMENT ─────────────
   ###########################################################################
   jellyseerr:
