@@ -142,7 +142,7 @@ services:
       - TZ=${TZ}
 
   ###########################################################################
-  # ───────────── Media Hunter ─────────────
+  # ───────────── MEDIA HUNTER ─────────────
   ###########################################################################
   huntarr:
     image: ghcr.io/plexguide/huntarr:latest
@@ -208,62 +208,61 @@ services:
   ###########################################################################
   # ───────────── TRANSCODE SERVER ─────────────
   ###########################################################################
-#  tdarr:
-#   image: ghcr.io/haveagitgat/tdarr:latest
-#   container_name: tdarr
-#   hostname: tdarr
-#   ports:
-#     - "8265:8265"
-#     - "8266:8266"
-#   volumes:
-#     - ${ARRPATH}Tdarr/config:/app/config
-#     - ${CACHE}Tdarr/cache:/temp
-#     - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
-#     - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
-#     - ${NASDRIVE_1}Anime:/data/nas_anime
-#   restart: unless-stopped
-#   env_file:
-#     - ".env"
-#   environment:
-#     - PUID=${PUID}
-#     - PGID=${PGID}
-#     - UMASK_SET=002
-#     - TZ=${TZ}
-
-# ###########################################################################
-# # ───────────── TRANSCODE WORKER NODE ─────────────
-# ###########################################################################
-# tdarr-node:
-#   image: ghcr.io/haveagitgat/tdarr_node:latest
-#   container_name: tdarr-node
-#   hostname: tdarr-node
-#   depends_on:
-#     - tdarr
-#   ports:
-#     - "8267:8267"
-#   devices:
-#     - /dev/dri:/dev/dri
-#   volumes:
-#     - ${ARRPATH}Tdarr/config:/app/config
-#     - ${CACHE}Tdarr/cache:/temp
-#     - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
-#     - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
-#     - ${NASDRIVE_1}Anime:/data/nas_anime
-#   restart: unless-stopped
-#   env_file:
-#     - ".env"
-#   environment:
-#     - nodeID=tdarr-node
-#     - serverIP=tdarr
-#     - serverPort=8266
-#     - PUID=${PUID}
-#     - PGID=${PGID}
-#     - UMASK_SET=002
-#     - TZ=${TZ}
-
+  tdarr:
+    image: ghcr.io/haveagitgat/tdarr:latest
+    container_name: tdarr
+    hostname: tdarr
+    ports:
+      - "8265:8265"
+      - "8266:8266"
+    volumes:
+      - ${ARRPATH}Tdarr/config:/app/config
+      - ${CACHE}Tdarr/cache:/temp
+      - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
+      - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
+      - ${NASDRIVE_1}Anime:/data/nas_anime
+    restart: unless-stopped
+    env_file:
+      - ".env"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK_SET=002
+      - TZ=${TZ}
 
   ###########################################################################
-  # ───────────── Proxy Through CloudFlare ─────────────
+  # ───────────── TRANSCODE WORKER NODE ─────────────
+  ###########################################################################
+  tdarr-node:
+    image: ghcr.io/haveagitgat/tdarr_node:latest
+    container_name: tdarr-node
+    hostname: tdarr-node
+    depends_on:
+      - tdarr
+    ports:
+      - "8267:8267"
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ${ARRPATH}Tdarr/config:/app/config
+      - ${CACHE}Tdarr/cache:/temp
+      - ${NASDRIVE_1}Radarr/movies:/data/nas_movies
+      - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_tvshows
+      - ${NASDRIVE_1}Anime:/data/nas_anime
+    restart: unless-stopped
+    env_file:
+      - ".env"
+    environment:
+      - nodeID=tdarr-node
+      - serverIP=tdarr
+      - serverPort=8266
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK_SET=002
+      - TZ=${TZ}
+
+  ###########################################################################
+  # ───────────── PROXY THROUGH CLOUDFLARE ─────────────
   ###########################################################################
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
@@ -279,8 +278,9 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - UMASK_SET=002
+
   ###########################################################################
-  # ───────────── Invite System ─────────────
+  # ───────────── INVITE SYSTEM ─────────────
   ###########################################################################
   wizarr:
     container_name: wizarr
@@ -293,4 +293,4 @@ services:
       - TZ=${TZ}
       - PUID=${PUID}
       - PGID=${PGID}
-      - DISABLE_BUILTIN_AUTH=false #Set to true ONLY if you are using another auth provider (Authelia, Authentik, etc)
+      - DISABLE_BUILTIN_AUTH=false
