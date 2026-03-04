@@ -162,9 +162,9 @@ services:
   ###########################################################################
   # ───────────── REQUEST MANAGEMENT ─────────────
   ###########################################################################
-  jellyseerr:
-    image: fallenbagel/jellyseerr:latest
-    container_name: jellyseerr
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
     ports:
       - "5055:5055"
     volumes:
