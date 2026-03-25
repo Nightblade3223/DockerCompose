@@ -244,6 +244,29 @@ services:
       - TZ=${TZ}
 
   ###########################################################################
+  # ───────────── REVERSE PROXY ─────────────
+  ###########################################################################
+  npmplus:
+    image: docker.io/zoeyvid/npmplus:latest
+    container_name: npmplus
+    hostname: npmplus
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443/tcp"
+      - "443:443/udp"
+    volumes:
+      - ${ARRPATH}NPMPlus/data:/data
+    restart: unless-stopped
+    env_file:
+      - ".env"
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - NGINX_WORKER_PROCESSES=auto
+
+  ###########################################################################
   # ───────────── PROXY THROUGH CLOUDFLARE ─────────────
   ###########################################################################
   flaresolverr:
