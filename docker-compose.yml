@@ -141,6 +141,30 @@ services:
       - UMASK_SET=002
       - TZ=${TZ}
 
+
+  plex:
+    image: linuxserver/plex:latest
+    container_name: plex
+    hostname: plex
+    ports:
+      - "32400:32400/tcp"
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    volumes:
+      - ${ARRPATH}Plex/config:/config
+      - ${NASDRIVE_1}Radarr/movies:/data/nas_Movies
+      - ${NASDRIVE_1}Sonarr/tvshows:/data/nas_TVShows
+      - ${NASDRIVE_1}Lidarr/music:/data/nas_Music
+      - ${NASDRIVE_1}Anime:/data/nas_Anime
+    restart: unless-stopped
+    env_file:
+      - ".env"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK_SET=002
+      - TZ=${TZ}
+
   ###########################################################################
   # ───────────── REQUEST MANAGEMENT ─────────────
   ###########################################################################
