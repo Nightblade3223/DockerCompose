@@ -1,6 +1,6 @@
 # Media Automation Docker Compose Stack
 
-A production-oriented `docker-compose` stack for self-hosted media automation, streaming, request handling, and reverse proxying.
+A production-oriented `docker-compose` stack for self-hosted media automation, streaming, request handling, and reverse proxying, plus anti-bot cookie solving via Byparr.
 
 ## Summary
 
@@ -10,7 +10,7 @@ This project brings together the *arr ecosystem, media servers, request workflow
 - Media playback (`Jellyfin`, `Plex`).
 - User requests and onboarding (`Seerr`, `Wizarr`).
 - Download and post-processing pipeline (`qBittorrent`, `Tdarr`).
-- Secure/public access (`NPMPlus`) and anti-bot proxy support (`Flaresolverr`).
+- Secure/public access (`NPMPlus`) and anti-bot proxy support (`Flaresolverr`) and Cloudflare/anti-bot bypass cookie solving (`Byparr`).
 - Unified landing/dashboard (`Homarr`).
 
 ## Services Included
@@ -30,6 +30,7 @@ This project brings together the *arr ecosystem, media servers, request workflow
 | Tdarr Node | `ghcr.io/haveagitgat/tdarr_node:latest` | Transcode worker | `8267` |
 | NPMPlus | `docker.io/zoeyvid/npmplus:latest` | Reverse proxy + cert management | `80`, `81`, `443/tcp`, `443/udp` |
 | Flaresolverr | `ghcr.io/flaresolverr/flaresolverr:latest` | Cloudflare challenge proxy helper | `8191` |
+| Byparr | `ghcr.io/thephaseless/byparr:latest` | Anti-bot cookie solving API | `8192` (container `8191`) |
 | Wizarr | `ghcr.io/wizarrrr/wizarr` | Invite/onboarding system | `5690` |
 
 ## Key Features
@@ -129,5 +130,6 @@ docker compose down
 
 - `Tdarr Node` depends on `Tdarr` and expects internal service DNS (`serverIP=tdarr`).
 - `Flaresolverr` exposes configurable defaults via environment variables (`PORT`, `LOG_LEVEL`, etc.).
+- `Byparr` is exposed on host port `8192` and maps to container port `8191` to avoid conflict with `Flaresolverr`.
 - `NPMPlus` upstream features are documented at:
   - https://github.com/ZoeyVid/NPMplus?tab=readme-ov-file#list-of-new-features
