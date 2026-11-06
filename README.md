@@ -4,42 +4,36 @@ A production-oriented `docker-compose` stack for self-hosted media automation, s
 
 ## Summary
 
-This project brings together the *arr ecosystem, media servers, request workflows, transcoding, and ingress tooling in a single compose file. It is designed for:
+This project brings together the *arr ecosystem, media streaming, request workflows, and ingress tooling in a single compose file. It is designed for:
 
-- Automated media discovery and import (`Prowlarr`, `Sonarr`, `Radarr`, `Lidarr`).
-- Media playback (`Jellyfin`, `Plex`).
-- User requests and onboarding (`Seerr`, `Wizarr`).
-- Download and post-processing pipeline (`qBittorrent`, `Tdarr`).
+- Automated media discovery and import (`Prowlarr`, `Sonarr`, `Radarr`).
+- Media playback (`Jellyfin`).
+- User requests (`Seerr`).
+- Download pipeline (`qBittorrent`).
 - Secure/public access (`NPMPlus`) and anti-bot proxy support (`Flaresolverr`) and Cloudflare/anti-bot bypass cookie solving (`Byparr`).
-- Unified landing/dashboard (`Homarr`).
 
 ## Services Included
 
 | Service | Image | Purpose | Default Port(s) |
 |---|---|---|---|
+| LANCommander | `lancommander/lancommander:latest` | Personal game library and launcher backend | `1337/tcp`, `35891/udp`, `213/udp` |
 | Prowlarr | `linuxserver/prowlarr:latest` | Indexer manager for *arr apps | `9696` |
 | Sonarr | `linuxserver/sonarr:latest` | TV show automation | `8989` |
 | Radarr | `linuxserver/radarr:latest` | Movie automation | `7878` |
-| Lidarr | `linuxserver/lidarr:latest` | Music automation | `8686` |
-| Homarr | `ghcr.io/ajnart/homarr:latest` | Dashboard/homepage | `7575` |
 | Jellyfin | `linuxserver/jellyfin:latest` | Media server | `8096`, `7359/udp`, `1900/udp` |
-| Plex | `linuxserver/plex:latest` | Media server (alternative/additional) | `32400` |
 | Seerr | `ghcr.io/seerr-team/seerr:latest` | Media request management | `5055` |
 | qBittorrent | `linuxserver/qbittorrent:latest` | Torrent client | `8080`, `6881/tcp`, `6881/udp` |
-| Tdarr | `ghcr.io/haveagitgat/tdarr:latest` | Transcode server | `8265`, `8266` |
-| Tdarr Node | `ghcr.io/haveagitgat/tdarr_node:latest` | Transcode worker | `8267` |
 | NPMPlus | `docker.io/zoeyvid/npmplus:latest` | Reverse proxy + cert management | `80`, `81`, `443/tcp`, `443/udp` |
 | Flaresolverr | `ghcr.io/flaresolverr/flaresolverr:latest` | Cloudflare challenge proxy helper | `8191` |
 | Byparr | `ghcr.io/thephaseless/byparr:latest` | Anti-bot cookie solving API | `8192` (container `8191`) |
-| Wizarr | `ghcr.io/wizarrrr/wizarr` | Invite/onboarding system | `5690` |
 
 ## Key Features
 
 - **Full media automation pipeline** from indexers to downloads to organized libraries.
-- **Dual media server support** using shared content mounts for Jellyfin and Plex.
-- **Hardware acceleration ready** (`/dev/dri`) for media and transcoding workloads.
+- **Media streaming** through Jellyfin.
+- **Hardware acceleration ready** (`/dev/dri`) for Jellyfin transcoding workloads.
 - **Remote-friendly ingress** with NPMPlus for TLS termination and host-based routing.
-- **User self-service experience** via Seerr (requests), Wizarr (invites), and Homarr (dashboard).
+- **User self-service experience** via Seerr for requests.
 - **Consistent runtime controls** with shared `PUID`, `PGID`, `TZ`, and `UMASK_SET` usage.
 
 ## Setup (Best Practice)
@@ -68,6 +62,7 @@ At minimum, define:
   - `ARRPATH`
   - `CACHE`
   - `NASDRIVE_1`
+  - `NASDRIVE_2=/nas_share/Other/` for non-ARR applications.
 
 > Tip: ensure all host paths end with a trailing slash when required by your path convention in `docker-compose.yml`.
 
@@ -92,14 +87,50 @@ After startup, access each service from your host/LAN using the ports listed abo
 ## Recommended Post-Install Configuration
 
 1. Configure `qBittorrent` download categories/paths.
-2. In Sonarr/Radarr/Lidarr, add:
+2. In Sonarr/Radarr, add:
    - Download client: `qBittorrent`
    - Indexer source: `Prowlarr`
    - Root folders that match the mounted `/data/...` paths.
-3. Connect Seerr to Jellyfin or Plex.
+3. Connect Seerr to Jellyfin.
 4. Configure NPMPlus proxy hosts and TLS certificates.
-5. Add service links/widgets in Homarr.
-6. Set Tdarr libraries and worker/node options.
+
+## LANCommander game library
+
+LANCommander supports user accounts, registration approval, and role-based access.
+Administrators can add games and upload versioned game ZIP archives through the web
+dashboard. Friends use the LANCommander desktop launcher to connect to your server,
+sign in, browse the library, download/install games, and launch them. Each game may
+need install and launch scripts; copying loose files into the NAS folder does not
+automatically publish a playable game.
+
+The `.env` setting `NASDRIVE_2=/nas_share/Other/` gives LANCommander a dedicated
+`/nas_share/Other/Games/LANCommander/` directory, mounted at `/app/Data`. This stores
+its configuration, database, and uploaded archives together. Back up the entire
+directory. Create it on your mounted NAS before starting, and make it writable by
+the configured `PUID` and `PGID`:
+
+```bash
+mkdir -p /nas_share/Other/Games/LANCommander
+docker compose up -d lancommander
+```
+
+Open port `1337` on your server to complete LANCommander's initial setup and create
+the administrator account. Review registration and approval settings before adding
+friends; give player accounts the roles you want them to have. Keep archive, media,
+save, and backup storage paths inside `/app/Data` during setup so they persist on
+the NAS.
+Port `35891/udp` is for LAN discovery and `213/udp` is for the optional IPX relay.
+Docker bridge networking may not forward discovery broadcasts, so entering the
+server address manually in the launcher is the reliable fallback.
+
+For friends outside your LAN, provide a reachable HTTPS hostname through NPMPlus
+(upstream `lancommander:1337`) or private VPN access. Configure reverse-proxy upload
+size limits and timeouts for large game archives. This Compose entry does not itself
+configure remote access. Games must support the players' systems and any required
+licenses/DRM; LANCommander does not supply games or bypass DRM.
+
+Official references: [LANCommander setup and features](https://github.com/LANCommander/LANCommander#readme)
+and [game archive uploads](https://github.com/LANCommander/LANCommander/blob/master/LANCommander.Documentation/Server/Games.md#archives).
 
 ## Operational Best Practices
 
@@ -128,7 +159,6 @@ docker compose down
 
 ## Notes
 
-- `Tdarr Node` depends on `Tdarr` and expects internal service DNS (`serverIP=tdarr`).
 - `Flaresolverr` exposes configurable defaults via environment variables (`PORT`, `LOG_LEVEL`, etc.).
 - `Byparr` is exposed on host port `8192` and maps to container port `8191` to avoid conflict with `Flaresolverr`.
 - `NPMPlus` upstream features are documented at:
