@@ -6,7 +6,7 @@ services:
     container_name: karaoke-eternal
     volumes:
       - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Music/KaraokeEternal/config:/config
-      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Music/KaraokeEternal/media:/mnt/karaoke
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Music/Library:/mnt/karaoke
     ports:
       - "8082:8080"
     environment:
@@ -169,6 +169,26 @@ services:
 
   ###########################################################################
   # ───────────── MUSIC AUTOMATION ─────────────
+  ###########################################################################
+  lidarr:
+    image: linuxserver/lidarr:latest
+    container_name: lidarr
+    hostname: lidarr
+    volumes:
+      - ${ARRPATH}Lidarr/config:/config
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Music/Library:/data/nas_music
+      - ${CACHE}Downloads:/downloads
+    ports:
+      - "8686:8686"
+    restart: unless-stopped
+    env_file:
+      - ".env"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - UMASK_SET=002
+      - TZ=${TZ}
+
   ###########################################################################
   # ───────────── HOMEPAGE / DASHBOARD ─────────────
   ###########################################################################

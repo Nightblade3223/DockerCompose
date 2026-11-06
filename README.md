@@ -6,7 +6,7 @@ A production-oriented `docker-compose` stack for self-hosted media automation, s
 
 This project brings together the *arr ecosystem, media streaming, request workflows, and ingress tooling in a single compose file. It is designed for:
 
-- Automated media discovery and import (`Prowlarr`, `Sonarr`, `Radarr`).
+- Automated media discovery and import (`Prowlarr`, `Sonarr`, `Radarr`, `Lidarr`).
 - Media playback (`Jellyfin`).
 - User requests (`Seerr`).
 - Download pipeline (`qBittorrent`).
@@ -16,6 +16,7 @@ This project brings together the *arr ecosystem, media streaming, request workfl
 
 | Service | Image | Purpose | Default Port(s) |
 |---|---|---|---|
+| Lidarr | `linuxserver/lidarr:latest` | Music automation with shared karaoke library | `8686` |
 | Karaoke Eternal | `radrootllc/karaoke-eternal:latest` | Browser karaoke player and shared song queues | `8082` |
 | Massive Decks | `ghcr.io/lattyware/massivedecks/client:latest-release` + server | Browser party card game with PostgreSQL storage | `8083` |
 | LANCommander | `lancommander/lancommander:latest` | Personal game library and launcher backend | `1337/tcp`, `35891/udp`, `213/udp` |
@@ -89,7 +90,7 @@ After startup, access each service from your host/LAN using the ports listed abo
 ## Recommended Post-Install Configuration
 
 1. Configure `qBittorrent` download categories/paths.
-2. In Sonarr/Radarr, add:
+2. In Sonarr/Radarr/Lidarr, add:
    - Download client: `qBittorrent`
    - Indexer source: `Prowlarr`
    - Root folders that match the mounted `/data/...` paths.
@@ -136,21 +137,30 @@ and [game archive uploads](https://github.com/LANCommander/LANCommander/blob/mas
 
 ## Karaoke Eternal
 
-Karaoke Eternal stores its database in `${NASDRIVE_2}Music/KaraokeEternal/config`
-and your songs in `${NASDRIVE_2}Music/KaraokeEternal/media`. With the supplied `.env`,
-these are under `/nas_share/Other/Music/`.
+Karaoke Eternal stores its database in `${NASDRIVE_2}Music/KaraokeEternal/config`.
+Lidarr and Karaoke Eternal share `${NASDRIVE_2}Music/Library`, which resolves to
+`/nas_share/Other/Music/Library` with the supplied `.env`. Lidarr sees it at
+`/data/nas_music`; Karaoke Eternal sees it at `/mnt/karaoke`. Their application
+configuration stays separate: Lidarr uses `${ARRPATH}Lidarr/config`.
 
 ```bash
-mkdir -p /nas_share/Other/Music/KaraokeEternal/{config,media}
-docker compose up -d karaoke-eternal
+mkdir -p /nas_share/Other/Music/KaraokeEternal/config /nas_share/Other/Music/Library
+docker compose up -d lidarr karaoke-eternal
 ```
 
-Make both folders writable by `PUID`/`PGID`. Open your server on port `8082`, create
+Make the folders writable by `PUID`/`PGID`. In Lidarr on port `8686`, set the root
+folder to `/data/nas_music` and configure qBittorrent as the download client using
+the shared `/downloads` mount. If you already have songs under the previous
+`Music/KaraokeEternal/media` path or a previous Lidarr music directory, move them
+into `Music/Library` before switching; this change does not move existing files.
+
+Open your server on port `8082`, create
 the first administrator account, and add `/mnt/karaoke` in **Preferences → Media
 Folders**. Put MP4 videos or MP3+G files (MP3 with CDG lyrics, optionally zipped)
 in the media folder, named `Artist - Title`. Friends can join rooms from their
 phone browsers; run the browser player on the computer connected to your screen
-and speakers. Songs are supplied by you.
+and speakers. Songs are supplied by you; ordinary music imported by Lidarr does
+not automatically gain karaoke lyrics/CDG files.
 
 For HTTPS through NPMPlus, use upstream `karaoke-eternal:8080`. Enable reverse-proxy
 mode with `KES_PROXY_TRUST` matching your controlled proxy network (for the local
