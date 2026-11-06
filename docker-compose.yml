@@ -1,6 +1,84 @@
 version: "3.9"
 
 services:
+  karaoke-eternal:
+    image: radrootllc/karaoke-eternal:latest
+    container_name: karaoke-eternal
+    volumes:
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Music/KaraokeEternal/config:/config
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Music/KaraokeEternal/media:/mnt/karaoke
+    ports:
+      - "8082:8080"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    restart: unless-stopped
+
+  massivedecks-init:
+    image: ghcr.io/lattyware/massivedecks/server:latest-release
+    user: "0:0"
+    command: ["node", "/init.cjs"]
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ./config/massivedecks/init.cjs:/init.cjs:ro
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Games/MassiveDecks/config:/config
+    networks:
+      - massivedecks
+    restart: "no"
+
+  massivedecks-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: massivedecks
+      POSTGRES_DB: massivedecks
+      POSTGRES_PASSWORD_FILE: /run/massivedecks/postgres-password
+    volumes:
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Games/MassiveDecks/postgres:/var/lib/postgresql/data
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Games/MassiveDecks/config:/run/massivedecks:ro
+    depends_on:
+      massivedecks-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U massivedecks -d massivedecks"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - massivedecks
+    restart: unless-stopped
+
+  massivedecks-server:
+    image: ghcr.io/lattyware/massivedecks/server:latest-release
+    user: "${PUID}:${PGID}"
+    environment:
+      NODE_ENV: production
+      MD_CONFIG_PATH: /config/config.json5
+    volumes:
+      - ${NASDRIVE_2:?Set NASDRIVE_2 in .env}Games/MassiveDecks/config:/config:ro
+    depends_on:
+      massivedecks-db:
+        condition: service_healthy
+    networks:
+      massivedecks:
+        aliases:
+          - server
+    restart: unless-stopped
+
+  massivedecks:
+    image: ghcr.io/lattyware/massivedecks/client:latest-release
+    container_name: massivedecks
+    ports:
+      - "8083:8080"
+    depends_on:
+      - massivedecks-server
+    networks:
+      - default
+      - massivedecks
+    restart: unless-stopped
+
   ###########################################################################
   # ───────────── PERSONAL GAME LIBRARY ─────────────
   ###########################################################################
@@ -227,4 +305,7 @@ services:
       - TZ=${TZ}
 
   ###########################################################################
-  # ───────────── INVITE SYSTEM ─────────────
+  # ───────────── END OF SERVICES ─────────────
+
+networks:
+  massivedecks:

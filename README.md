@@ -16,6 +16,8 @@ This project brings together the *arr ecosystem, media streaming, request workfl
 
 | Service | Image | Purpose | Default Port(s) |
 |---|---|---|---|
+| Karaoke Eternal | `radrootllc/karaoke-eternal:latest` | Browser karaoke player and shared song queues | `8082` |
+| Massive Decks | `ghcr.io/lattyware/massivedecks/client:latest-release` + server | Browser party card game with PostgreSQL storage | `8083` |
 | LANCommander | `lancommander/lancommander:latest` | Personal game library and launcher backend | `1337/tcp`, `35891/udp`, `213/udp` |
 | Prowlarr | `linuxserver/prowlarr:latest` | Indexer manager for *arr apps | `9696` |
 | Sonarr | `linuxserver/sonarr:latest` | TV show automation | `8989` |
@@ -131,6 +133,63 @@ licenses/DRM; LANCommander does not supply games or bypass DRM.
 
 Official references: [LANCommander setup and features](https://github.com/LANCommander/LANCommander#readme)
 and [game archive uploads](https://github.com/LANCommander/LANCommander/blob/master/LANCommander.Documentation/Server/Games.md#archives).
+
+## Karaoke Eternal
+
+Karaoke Eternal stores its database in `${NASDRIVE_2}Music/KaraokeEternal/config`
+and your songs in `${NASDRIVE_2}Music/KaraokeEternal/media`. With the supplied `.env`,
+these are under `/nas_share/Other/Music/`.
+
+```bash
+mkdir -p /nas_share/Other/Music/KaraokeEternal/{config,media}
+docker compose up -d karaoke-eternal
+```
+
+Make both folders writable by `PUID`/`PGID`. Open your server on port `8082`, create
+the first administrator account, and add `/mnt/karaoke` in **Preferences → Media
+Folders**. Put MP4 videos or MP3+G files (MP3 with CDG lyrics, optionally zipped)
+in the media folder, named `Artist - Title`. Friends can join rooms from their
+phone browsers; run the browser player on the computer connected to your screen
+and speakers. Songs are supplied by you.
+
+For HTTPS through NPMPlus, use upstream `karaoke-eternal:8080`. Enable reverse-proxy
+mode with `KES_PROXY_TRUST` matching your controlled proxy network (for the local
+Docker proxy, upstream recommends `loopback,private`), and forward
+`X-Forwarded-Proto` and `X-Forwarded-For`. This setting is deliberately left unset
+for direct LAN access. See the [official server guide](https://www.karaoke-eternal.com/docs/karaoke-eternal-server/).
+
+## Massive Decks
+
+Massive Decks is a separate browser card game, available on your server's port
+`8083`; it does not need the LANCommander launcher. Its client and server use the
+same `latest-release` tag. PostgreSQL and the game server have no published host
+ports and communicate on a dedicated Docker network.
+
+```bash
+mkdir -p /nas_share/Other/Games/MassiveDecks/{config,postgres}
+docker compose up -d massivedecks
+```
+
+On first startup, `massivedecks-init` copies the image's default settings to
+`${NASDRIVE_2}Games/MassiveDecks/config/config.json5`, configures PostgreSQL, and
+generates private random database and session secrets. It exits successfully when
+finished; this is expected. Existing settings and secrets are retained on later
+starts. Keep the `config` directory private and back it up together with PostgreSQL
+(use a database dump or stop the database before taking a filesystem backup).
+Do not commit the generated settings/password file. NAS storage must support the
+ownership, permissions, and file locking PostgreSQL requires.
+
+Database files live at `${NASDRIVE_2}Games/MassiveDecks/postgres`. Game state and
+deck cache persist across server restarts, while the application's normal expiry
+rules still remove abandoned/finished games. Only built-in decks are enabled by
+default so startup works without external card services. You can add Many Decks
+or JSON Against Humanity to `sources` in the generated configuration using the
+upstream examples; those integrations require outbound network access and must
+work before the server can finish starting. To update, pull the client, server, and init image
+together before recreating the services.
+
+For access through NPMPlus, use upstream `massivedecks:8080` and enable WebSocket
+support. See the [official deployment examples](https://github.com/Lattyware/massivedecks/tree/main/deployment).
 
 ## Operational Best Practices
 
